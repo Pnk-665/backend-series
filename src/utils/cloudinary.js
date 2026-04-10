@@ -7,10 +7,13 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const uploadOnCloudinary = async (localFilePath) => {
+console.log("TESTING ENV VARIABLES: ", process.env.MY_CLOUD_NAME);
+
+const uploadOnCloudinary = async (localFilePath) =>{
   try {
     if(!localFilePath) return null
     // upload file on cloudinary
+    
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto"
     })
@@ -21,19 +24,12 @@ const uploadOnCloudinary = async (localFilePath) => {
     return response
     
   } catch (error) {
-    fs.unlinkSync(localFilePath) //remove the locally saved temp file as the upload operation got failed
-    return null
-    
+  if (fs.existsSync(localFilePath)) {
+    fs.unlinkSync(localFilePath)
   }
-
+  console.error("Cloudinary upload failed:", error)
+  return null
+}
 }
 
-cloudinary.v2.uploader
-.upload("dog.mp4", {
-  resource_type: "video", 
-  public_id: "my_dog",
-  overwrite: true, 
-  notification_url: "https://mysite.example.com/notify_endpoint"})
-.then(result=>console.log(result));
-
-export default cloudinary
+export {uploadOnCloudinary, cloudinary}
